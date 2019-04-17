@@ -41,6 +41,7 @@
 	</modules>
 	
 	<build>
+		<defaultGoal>clean deploy</defaultGoal>
 		<extensions>
 			<!-- See https://jira.codehaus.org/browse/MINSTALL-102 -->
 			<extension>
