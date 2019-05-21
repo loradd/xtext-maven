@@ -17,6 +17,11 @@ spec:
   - name: xtext-buildenv
     image: docker.io/smoht/xtext-buildenv:0.7
     tty: true
+    resources:
+      limits:
+        memory: "2Gi"
+      requests:
+        memory: "2Gi"
     volumeMounts:
     - name: settings-xml
       mountPath: /home/jenkins/.m2/settings.xml
@@ -41,19 +46,20 @@ spec:
     '''
     }
   }
-  
+
   options {
-    buildDiscarder(logRotator(numToKeepStr:'15'))
+    buildDiscarder(logRotator(numToKeepStr:'5'))
     disableConcurrentBuilds()
     timeout(time: 60, unit: 'MINUTES')
     timestamps()
   }
-  
+
   // https://jenkins.io/doc/book/pipeline/syntax/#triggers
   triggers {
     pollSCM('H/5 * * * *')
   }
   
+  // Build stages
   stages {
     stage('Checkout') {
       steps {
@@ -67,6 +73,10 @@ spec:
         dir('.m2/repository/org/eclipse/xtext') { deleteDir() }
         dir('.m2/repository/org/eclipse/xtend') { deleteDir() }
         sh '''
+          if [ -f "/.dockerenv" ]; then
+            export MAVEN_OPTS="-XX:MaxRAMPercentage=70.0"
+          fi
+          
           mvn \
             -f org.eclipse.xtext.maven.parent/pom.xml \
             --batch-mode \
@@ -85,6 +95,9 @@ spec:
   }
 
   post {
+    always {
+      junit testResults: '**/target/surefire-reports/*.xml'
+    }
     success {
       archiveArtifacts artifacts: 'build/**'
     }
