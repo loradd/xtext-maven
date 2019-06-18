@@ -73,10 +73,6 @@ spec:
         dir('.m2/repository/org/eclipse/xtext') { deleteDir() }
         dir('.m2/repository/org/eclipse/xtend') { deleteDir() }
         sh '''
-          if [ -f "/.dockerenv" ]; then
-            export MAVEN_OPTS="-XX:MaxRAMPercentage=70.0"
-          fi
-          
           mvn \
             -f org.eclipse.xtext.maven.parent/pom.xml \
             --batch-mode \
